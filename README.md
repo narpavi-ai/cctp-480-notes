@@ -18,12 +18,12 @@ environment — everything runs in a browser.
 
 ## Good vs. Bad Prompts
 
-Open **[`good-bad-prompts/index.html`](good-bad-prompts/index.html)** (or
-the live page once GitHub Pages is enabled — link posted in the slide
-deck). Walks through the same Role / Task / Context / Output framework and
-Chain-of-Thought example used in class, with a few weak-vs-strong prompt
-pairs and a self-check for your own prompt — no API key needed, it's a
-plain heuristic checklist.
+Open the live page: **[narpavi-ai.github.io/cctp-480-notes/good-bad-prompts](https://narpavi-ai.github.io/cctp-480-notes/good-bad-prompts/)**
+(or [`good-bad-prompts/index.html`](good-bad-prompts/index.html) directly
+in this repo). Walks through the same Role / Task / Context / Output
+framework and Chain-of-Thought example used in class, with a few
+weak-vs-strong prompt pairs and a self-check for your own prompt — no API
+key needed, it's a plain heuristic checklist.
 
 ## Specification to App
 
@@ -33,13 +33,14 @@ working, multi-screen app in Lovable, in one guided sitting.
 
 ## Workflow or Agent?
 
-Open **[`workflow-vs-agent/index.html`](workflow-vs-agent/index.html)** —
-a page-by-page (arrow-key or click) exercise built to project during class
-as easily as to work through solo. Six real-world scenarios, a Workflow-or-
-Agent choice for each with an instant right/wrong explanation, then a
-recap page showing every correct answer at once, and a closing prompt to
-reflect on your own job. Mirrors the exact framework from the "Agentic
-Systems vs Workflows" slide.
+Open the live page: **[narpavi-ai.github.io/cctp-480-notes/workflow-vs-agent](https://narpavi-ai.github.io/cctp-480-notes/workflow-vs-agent/)**
+(or [`workflow-vs-agent/index.html`](workflow-vs-agent/index.html)
+directly in this repo) — a page-by-page (arrow-key or click) exercise
+built to project during class as easily as to work through solo. Six
+real-world scenarios, a Workflow-or-Agent choice for each with an instant
+right/wrong explanation, then a recap page showing every correct answer at
+once, and a closing prompt to reflect on your own job. Mirrors the exact
+framework from the "Agentic Systems vs Workflows" slide.
 
 ## References used across this repo
 
