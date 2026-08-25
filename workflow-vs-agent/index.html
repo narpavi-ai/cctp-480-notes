@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workflow or Agent? — CCTP 480</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-alt: #f4f6f9;
+    --text: #1b2430;
+    --text-muted: #5b6472;
+    --border: #dde2e8;
+    --accent: #1a56db;
+    --workflow: #7c3aed;
+    --workflow-bg: #f3ecfd;
+    --agent: #0f9d8c;
+    --agent-bg: #e7f9f6;
+    --wrong: #c0392b;
+    --wrong-bg: #fdecea;
+    --card-shadow: 0 2px 10px rgba(20, 30, 50, 0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10141c;
+      --bg-alt: #171d29;
+      --text: #e7ebf2;
+      --text-muted: #9aa4b2;
+      --border: #2a3242;
+      --accent: #5b8def;
+      --workflow: #b794f6;
+      --workflow-bg: #2a1f3d;
+      --agent: #4ade80;
+      --agent-bg: #10301f;
+      --wrong: #ff6b5e;
+      --wrong-bg: #3a1f1c;
+      --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height: 1.55;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: var(--accent); }
+
+  .topbar { padding: 1rem 1.5rem 0; }
+  .crumb { font-size: .85rem; color: var(--text-muted); }
+
+  .stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 1.5rem;
+  }
+  .page {
+    width: 100%;
+    max-width: 780px;
+    display: none;
+  }
+  .page.active { display: block; }
+
+  h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); margin: 0 0 .5rem; text-align: center; }
+  .sub { color: var(--text-muted); font-size: 1.05rem; text-align: center; max-width: 60ch; margin: 0 auto 1.5rem; }
+
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 640px) { .compare { grid-template-columns: 1fr; } }
+  .compare .side { border-radius: 12px; padding: 1.1rem 1.3rem; border: 1px solid var(--border); box-shadow: var(--card-shadow); }
+  .compare .side.workflow { background: var(--workflow-bg); }
+  .compare .side.agent { background: var(--agent-bg); }
+  .compare h3 { margin: 0 0 .5rem; font-size: 1.15rem; }
+  .compare .side.workflow h3 { color: var(--workflow); }
+  .compare .side.agent h3 { color: var(--agent); }
+  .compare ul { margin: 0; padding-left: 1.2rem; font-size: .95rem; }
+  .compare li { margin-bottom: .3rem; }
+
+  .scenario-num { text-align: center; color: var(--text-muted); font-size: .85rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; margin-bottom: .6rem; }
+  .scenario-card { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 14px; padding: 2rem 2.2rem; box-shadow: var(--card-shadow); text-align: center; }
+  .scenario-text { font-size: 1.25rem; margin-bottom: 1.6rem; }
+  .choices { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .choice-btn {
+    border: 2px solid var(--border); background: var(--bg); color: var(--text);
+    border-radius: 10px; padding: .8rem 1.8rem; font-size: 1.05rem; font-weight: 700;
+    cursor: pointer; min-width: 140px;
+  }
+  .choice-btn:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-1px); }
+  .choice-btn.picked-workflow { border-color: var(--workflow); background: var(--workflow-bg); }
+  .choice-btn.picked-agent { border-color: var(--agent); background: var(--agent-bg); }
+  .choice-btn:disabled { cursor: default; }
+
+  .reveal { margin-top: 1.5rem; padding: 1.1rem 1.3rem; border-radius: 10px; font-size: 1rem; text-align: left; display: none; }
+  .reveal.show { display: block; }
+  .reveal.correct { background: var(--agent-bg); border-left: 4px solid var(--agent); }
+  .reveal.incorrect { background: var(--wrong-bg); border-left: 4px solid var(--wrong); }
+  .reveal b { display: block; margin-bottom: .35rem; font-size: 1.05rem; }
+
+  .summary-list { display: flex; flex-direction: column; gap: .8rem; }
+  .summary-row { display: flex; gap: .9rem; align-items: flex-start; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: .9rem 1.1rem; }
+  .summary-tag { flex-shrink: 0; font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: .25rem .6rem; border-radius: 999px; margin-top: .1rem; }
+  .summary-tag.workflow { color: var(--workflow); background: var(--workflow-bg); }
+  .summary-tag.agent { color: var(--agent); background: var(--agent-bg); }
+  .summary-row div p { margin: 0; }
+  .summary-row .why { color: var(--text-muted); font-size: .88rem; margin-top: .25rem !important; }
+
+  .reflect textarea { width: 100%; min-height: 100px; font-family: inherit; font-size: .95rem; padding: .8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-alt); color: var(--text); resize: vertical; }
+
+  .nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem 1.5rem; gap: 1rem; }
+  .nav-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: .65rem 1.3rem; font-size: .95rem; font-weight: 700; cursor: pointer; }
+  .nav-btn:disabled { opacity: .35; cursor: default; }
+  .nav-btn.ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+  .dots { display: flex; gap: .4rem; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; }
+  .dot.active { background: var(--accent); }
+  .page-label { font-size: .85rem; color: var(--text-muted); min-width: 70px; text-align: center; }
+
+  footer { text-align: center; font-size: .8rem; color: var(--text-muted); padding-bottom: .8rem; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="crumb"><a href="../README.md">CCTP 480 Notes</a> / Workflow or Agent?</div>
+</div>
+
+<div class="stage" id="stage"></div>
+
+<div class="nav">
+  <button class="nav-btn ghost" id="prevBtn">&larr; Back</button>
+  <div class="dots" id="dots"></div>
+  <span class="page-label" id="pageLabel"></span>
+  <button class="nav-btn" id="nextBtn">Next &rarr;</button>
+</div>
+<footer>Part of the <a href="../README.md">CCTP 480 Notes</a> repo · use the arrow keys to navigate</footer>
+
+<script>
+const scenarios = [
+  {
+    text: "Send a receipt email every time a payment is processed.",
+    answer: "workflow",
+    why: "Same trigger, same steps, every single time. No judgment call needed — a fixed pipeline handles this perfectly and predictably."
+  },
+  {
+    text: "Book the cheapest flight + hotel combo for a trip, adjusting the plan if a flight sells out or dates need to shift.",
+    answer: "agent",
+    why: "The right move depends on what it finds along the way — it has to weigh trade-offs and re-plan mid-task, not just follow one fixed path."
+  },
+  {
+    text: "Resize and compress every image uploaded to a folder.",
+    answer: "workflow",
+    why: "Deterministic, repeatable, no reasoning required. An agent here would be slower and less predictable for zero benefit."
+  },
+  {
+    text: "Research a competitor's pricing across several websites and summarize the findings, adjusting the search strategy based on what it finds.",
+    answer: "agent",
+    why: "The exact steps can't be known in advance — what it searches next depends on what it just learned. That's dynamic reasoning, not a fixed pipeline."
+  },
+  {
+    text: "Categorize incoming expense receipts into a fixed set of budget categories.",
+    answer: "workflow",
+    why: "A known, closed set of categories with clear-ish rules is exactly what a predictable, auditable workflow is good at."
+  },
+  {
+    text: "Handle a customer support ticket end-to-end: understand the issue, look up the account, then decide whether to refund, escalate, or resolve it directly.",
+    answer: "agent",
+    why: "Multiple branching decisions based on judgment (refund vs. escalate vs. resolve) — exactly the kind of runtime reasoning a fixed pipeline can't cover for every case."
+  }
+];
+
+// Page 0 = framework intro, 1..N = scenarios, N+1 = summary, N+2 = reflect
+const TOTAL_PAGES = scenarios.length + 3;
+let current = 0;
+const answers = new Array(scenarios.length).fill(null); // 'workflow' | 'agent' | null
+
+function introPage() {
+  return `
+    <h1>Workflow or Agent?</h1>
+    <p class="sub">For each scenario ahead, decide: does this need a fixed <b>workflow</b>,
+    or does it need an <b>agent</b>'s judgment? Pick, then see the answer and why.</p>
+    <div class="compare">
+      <div class="side workflow">
+        <h3>Workflow System</h3>
+        <ul>
+          <li>Fixed, predefined sequence of steps</li>
+          <li>Logic entirely defined by the developer</li>
+          <li>Predictable and easy to control</li>
+          <li>Fails when inputs vary from what was coded</li>
+        </ul>
+      </div>
+      <div class="side agent">
+        <h3>Agentic System</h3>
+        <ul>
+          <li>Steps decided dynamically at runtime</li>
+          <li>Reasoning drives execution, not fixed code</li>
+          <li>Adapts fluidly to new information</li>
+          <li>Handles edge cases without reprogramming</li>
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+function scenarioPage(i) {
+  const s = scenarios[i];
+  const picked = answers[i];
+  const correct = picked === s.answer;
+  return `
+    <div class="scenario-num">Scenario ${i + 1} of ${scenarios.length}</div>
+    <div class="scenario-card">
+      <div class="scenario-text">${s.text}</div>
+      <div class="choices">
+        <button class="choice-btn ${picked === 'workflow' ? 'picked-workflow' : ''}" data-choice="workflow" ${picked ? 'disabled' : ''}>Workflow</button>
+        <button class="choice-btn ${picked === 'agent' ? 'picked-agent' : ''}" data-choice="agent" ${picked ? 'disabled' : ''}>Agent</button>
+      </div>
+      <div class="reveal ${picked ? 'show ' + (correct ? 'correct' : 'incorrect') : ''}">
+        ${picked ? `<b>${correct ? 'Right — ' : 'Not quite — '}this is a ${s.answer === 'workflow' ? 'Workflow' : 'Agent'}.</b>${s.why}` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function summaryPage() {
+  const rows = scenarios.map(s => `
+    <div class="summary-row">
+      <span class="summary-tag ${s.answer}">${s.answer}</span>
+      <div>
+        <p>${s.text}</p>
+        <p class="why">${s.why}</p>
+      </div>
+    </div>
+  `).join('');
+  const score = answers.filter((a, i) => a === scenarios[i].answer).length;
+  const attempted = answers.filter(a => a !== null).length;
+  return `
+    <h1>All the Correct Examples</h1>
+    <p class="sub">${attempted === scenarios.length ? `You got ${score} / ${scenarios.length} right.` : 'A full recap of every scenario — useful for review, or for showing the class after everyone answers.'}</p>
+    <div class="summary-list">${rows}</div>
+  `;
+}
+
+function reflectPage() {
+  return `
+    <h1>Now Your Own Example</h1>
+    <p class="sub">Think of a repetitive task in your own job — one with a clear goal but a few
+    judgment calls along the way.</p>
+    <p class="sub">Would you let an AI agent complete it end-to-end on its own, or only with a
+    human checking every step? What would have to be true about the task — or the agent — for
+    your answer to change?</p>
+    <div class="reflect">
+      <textarea id="own-task" placeholder="e.g. Every Monday I pull last week's sales numbers into a report..."></textarea>
+    </div>
+    <p class="sub" style="margin-top:1rem;">No submit button — this is the same prompt as the Module 3 "Let's Discuss" slide in class.</p>
+  `;
+}
+
+function render() {
+  const stage = document.getElementById('stage');
+  const page = document.createElement('div');
+  page.className = 'page active';
+
+  if (current === 0) {
+    page.innerHTML = introPage();
+  } else if (current <= scenarios.length) {
+    page.innerHTML = scenarioPage(current - 1);
+  } else if (current === scenarios.length + 1) {
+    page.innerHTML = summaryPage();
+  } else {
+    page.innerHTML = reflectPage();
+  }
+
+  stage.innerHTML = '';
+  stage.appendChild(page);
+
+  // wire up choice buttons if this is a scenario page
+  const idx = current - 1;
+  if (current >= 1 && current <= scenarios.length) {
+    page.querySelectorAll('.choice-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (answers[idx] !== null) return;
+        answers[idx] = btn.dataset.choice;
+        render();
+      });
+    });
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === TOTAL_PAGES - 1;
+  document.getElementById('pageLabel').textContent = `${current + 1} / ${TOTAL_PAGES}`;
+
+  const dotsEl = document.getElementById('dots');
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < TOTAL_PAGES; i++) {
+    const d = document.createElement('span');
+    d.className = 'dot' + (i === current ? ' active' : '');
+    d.addEventListener('click', () => { current = i; render(); });
+    dotsEl.appendChild(d);
+  }
+}
+
+document.getElementById('prevBtn').addEventListener('click', () => { if (current > 0) { current--; render(); } });
+document.getElementById('nextBtn').addEventListener('click', () => { if (current < TOTAL_PAGES - 1) { current++; render(); } });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') { if (current < TOTAL_PAGES - 1) { current++; render(); } }
+  if (e.key === 'ArrowLeft') { if (current > 0) { current--; render(); } }
+});
+
+render();
+</script>
+</body>
+</html>

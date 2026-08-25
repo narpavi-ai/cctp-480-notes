@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Good Prompts vs. Bad Prompts — CCTP 480</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-alt: #f4f6f9;
+    --text: #1b2430;
+    --text-muted: #5b6472;
+    --border: #dde2e8;
+    --accent: #1a56db;
+    --accent-2: #0f9d8c;
+    --bad: #c0392b;
+    --bad-bg: #fdecea;
+    --good: #0f9d58;
+    --good-bg: #e9f9ef;
+    --card-shadow: 0 1px 3px rgba(20, 30, 50, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10141c;
+      --bg-alt: #171d29;
+      --text: #e7ebf2;
+      --text-muted: #9aa4b2;
+      --border: #2a3242;
+      --accent: #5b8def;
+      --accent-2: #3ec9b3;
+      --bad: #ff6b5e;
+      --bad-bg: #3a1f1c;
+      --good: #4ade80;
+      --good-bg: #12301f;
+      --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+  header { margin-bottom: 2rem; }
+  h1 { font-size: 1.9rem; margin: 0 0 .4rem; }
+  .sub { color: var(--text-muted); font-size: 1.05rem; max-width: 65ch; }
+  .crumb { font-size: .85rem; color: var(--text-muted); margin-bottom: 1rem; }
+  .crumb a { color: var(--accent); }
+  h2 { font-size: 1.35rem; margin-top: 3rem; border-bottom: 1px solid var(--border); padding-bottom: .5rem; }
+  h3 { font-size: 1.05rem; margin-bottom: .3rem; }
+
+  .framework { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .9rem; margin-top: 1.2rem; }
+  .framework .card { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.1rem; }
+  .framework .card b { color: var(--accent); }
+
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.2rem 0 2rem; }
+  @media (max-width: 640px) { .pair { grid-template-columns: 1fr; } }
+  .side { border-radius: 10px; padding: 1.1rem 1.2rem; border: 1px solid var(--border); box-shadow: var(--card-shadow); }
+  .side.bad { background: var(--bad-bg); }
+  .side.good { background: var(--good-bg); }
+  .tag { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: .15rem .55rem; border-radius: 999px; margin-bottom: .6rem; }
+  .side.bad .tag { color: var(--bad); background: rgba(192,57,43,.12); }
+  .side.good .tag { color: var(--good); background: rgba(15,157,88,.12); }
+  .prompt-text { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: .7rem .8rem; margin: .5rem 0 .7rem; white-space: pre-wrap; }
+  .why { font-size: .88rem; color: var(--text-muted); margin: 0; }
+  .why ul { margin: .3rem 0 0; padding-left: 1.1rem; }
+
+  .checker { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-top: 1.2rem; }
+  textarea { width: 100%; min-height: 110px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92rem; padding: .8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); resize: vertical; }
+  button { margin-top: .8rem; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: .6rem 1.1rem; font-size: .95rem; font-weight: 600; cursor: pointer; }
+  button:hover { opacity: .9; }
+  #results { margin-top: 1rem; }
+  .check-row { display: flex; align-items: flex-start; gap: .6rem; padding: .35rem 0; font-size: .92rem; }
+  .check-icon { flex-shrink: 0; width: 1.3rem; text-align: center; font-weight: 700; }
+  .check-icon.pass { color: var(--good); }
+  .check-icon.fail { color: var(--text-muted); }
+  .score-line { font-weight: 700; margin-bottom: .4rem; }
+  .nudge { margin-top: 1rem; padding: .8rem 1rem; border-left: 3px solid var(--accent); background: var(--bg); font-size: .9rem; color: var(--text-muted); border-radius: 0 8px 8px 0; }
+
+  footer { margin-top: 3.5rem; padding-top: 1.2rem; border-top: 1px solid var(--border); font-size: .85rem; color: var(--text-muted); }
+  footer a { color: var(--accent); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="crumb"><a href="../README.md">CCTP 480 Notes</a> / Good Prompts vs. Bad Prompts</div>
+
+<header>
+  <h1>Good Prompts vs. Bad Prompts</h1>
+  <p class="sub">A companion to Module 2 (Prompt Engineering). Same framework, same
+  examples as the slide deck — compare weak and strong prompts side by side, then
+  paste in your own prompt for a quick self-check.</p>
+</header>
+
+<h2>The framework, quickly</h2>
+<p class="sub">Four questions, answered up front, turn a vague ask into a usable prompt:</p>
+<div class="framework">
+  <div class="card"><b>Role</b><br>Who should the AI act as?</div>
+  <div class="card"><b>Task</b><br>What should the AI do?</div>
+  <div class="card"><b>Context</b><br>What background is relevant?</div>
+  <div class="card"><b>Output</b><br>How should the response look?</div>
+</div>
+
+<h2>Example 1 — Planning a weekend</h2>
+<div class="pair">
+  <div class="side bad">
+    <span class="tag">Weak</span>
+    <div class="prompt-text">What should I do in Edmonton this weekend?</div>
+    <p class="why">No role, no audience, no format, no timeframe — the AI has to guess everything.</p>
+  </div>
+  <div class="side good">
+    <span class="tag">Strong</span>
+    <div class="prompt-text">You are a local Edmonton travel guide. Recommend things to do in
+Edmonton for a couple visiting for the first time in summer.
+Provide 5 recommendations. Use bullet points. Include a
+one-sentence description for each.</div>
+    <p class="why">Role + Task + Context + Output, all named explicitly.</p>
+  </div>
+</div>
+
+<h2>Example 2 — A business task</h2>
+<div class="pair">
+  <div class="side bad">
+    <span class="tag">Weak</span>
+    <div class="prompt-text">Write a follow-up email to a client.</div>
+    <p class="why">Which client? Following up on what? What tone? The draft will be generic.</p>
+  </div>
+  <div class="side good">
+    <span class="tag">Strong</span>
+    <div class="prompt-text">You are a client-facing account manager at a small consulting firm.
+Write a follow-up email to a client who hasn't responded to a
+proposal sent 10 days ago. Keep it warm, brief, and low-pressure —
+no more than 120 words. End with one clear, easy next step.</div>
+    <p class="why">Specific role, specific situation, explicit tone and length constraints.</p>
+  </div>
+</div>
+
+<h2>Example 3 — Chain-of-Thought</h2>
+<div class="pair">
+  <div class="side bad">
+    <span class="tag">Direct Prompt</span>
+    <div class="prompt-text">A box holds 4 rows of 6 widgets. How many widgets in 9 boxes?</div>
+    <p class="why">Model jumps straight to a final number — sounds confident even when the math is wrong.</p>
+  </div>
+  <div class="side good">
+    <span class="tag">Chain-of-Thought Prompt</span>
+    <div class="prompt-text">A box holds 4 rows of 6 widgets. How many widgets in 9 boxes?
+Let's think step by step.</div>
+    <p class="why">The model works it out — widgets per box, then × 9 boxes — and the reasoning is visible enough to spot-check.</p>
+  </div>
+</div>
+
+<h2>In-class exercise — make it better</h2>
+<p class="sub">The same five prompts used in the Module 2 slide deck. For each one:
+what's missing (Role? Task? Context? Output format)? How would you rewrite it?</p>
+<div class="framework">
+  <div class="card"><b>1. Report</b><br>"Write a report."<br><i>For a client deliverable</i></div>
+  <div class="card"><b>2. Email</b><br>"Make this email better."<br><i>To a busy colleague</i></div>
+  <div class="card"><b>3. Project Plan</b><br>"Help me plan a project."<br><i>For a new product launch</i></div>
+  <div class="card"><b>4. Summary</b><br>"Summarize this document."<br><i>Of a 10-page report</i></div>
+  <div class="card"><b>5. Marketing</b><br>"Create a marketing plan."<br><i>For a niche B2B product</i></div>
+</div>
+
+<h2>Check your own prompt</h2>
+<div class="checker">
+  <label for="prompt-input"><b>Paste a prompt you're working on:</b></label><br>
+  <textarea id="prompt-input" placeholder="e.g. You are a...&#10;Your task is to...&#10;Context: ...&#10;Respond with..."></textarea><br>
+  <button onclick="checkPrompt()">Check my prompt</button>
+  <div id="results"></div>
+</div>
+
+<footer>
+  Part of the <a href="../README.md">CCTP 480 Notes</a> repo. Generated with AI
+  assistance as course support material — cross-check anything technical against
+  the linked official docs:
+  <a href="https://platform.openai.com/docs/guides/prompt-engineering" target="_blank" rel="noopener">OpenAI prompt engineering guide</a>
+  ·
+  <a href="https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices" target="_blank" rel="noopener">Anthropic prompting best practices</a>
+</footer>
+
+</div>
+
+<script>
+function checkPrompt() {
+  const text = document.getElementById('prompt-input').value.trim();
+  const resultsEl = document.getElementById('results');
+  if (!text) {
+    resultsEl.innerHTML = '<p class="why">Paste a prompt above first.</p>';
+    return;
+  }
+  const lower = text.toLowerCase();
+
+  const checks = [
+    {
+      label: 'Names a role for the AI',
+      test: /\byou are\b|\bact as\b|\byour role\b/.test(lower)
+    },
+    {
+      label: 'States a clear task or instruction',
+      test: /\b(write|create|generate|summarize|explain|list|recommend|analyze|draft|build|design|compare)\b/.test(lower)
+    },
+    {
+      label: 'Gives background or context',
+      test: /\bcontext\b|\bbackground\b|\bbecause\b|\bfor a\b|\bwho is\b|\bwho are\b/.test(lower) || text.length > 120
+    },
+    {
+      label: 'Specifies the output format',
+      test: /\bbullet|\blist\b|\btable\b|\bparagraph\b|\bformat\b|\bwords?\b|\bsentences?\b|\bjson\b|\bemail\b/.test(lower)
+    },
+    {
+      label: 'Includes a constraint (length, tone, or count)',
+      test: /\d/.test(text) || /\btone\b|\bconcise\b|\bbrief\b|\bformal\b|\bcasual\b/.test(lower)
+    },
+    {
+      label: 'Invites step-by-step reasoning (for multi-step tasks)',
+      test: /step by step|step-by-step|explain your reasoning|show your work/.test(lower)
+    }
+  ];
+
+  const passed = checks.filter(c => c.test).length;
+  let rows = checks.map(c =>
+    `<div class="check-row"><span class="check-icon ${c.test ? 'pass' : 'fail'}">${c.test ? '✓' : '—'}</span><span>${c.label}</span></div>`
+  ).join('');
+
+  resultsEl.innerHTML =
+    `<p class="score-line">${passed} / ${checks.length} signals found</p>` +
+    rows +
+    `<div class="nudge">This is a rough heuristic, not a grade — it can't tell if your
+    prompt is actually <em>good</em>, only whether it's structured. Now run both a
+    weak and a strong version of your prompt in <a href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT</a>
+    or <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a> and compare the answers yourself —
+    that comparison is the real lesson.</div>`;
+}
+</script>
+</body>
+</html>
